@@ -31,14 +31,158 @@ cd game-arcade-api
 pip install -r requirements.txt
 ```
 
+## Development Setup
+
+1. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   pip install pytest  # For running tests
+   ```
+
 ## Running the Server
 
 To start the development server:
 ```bash
-uvicorn app:app --reload
+uvicorn app:app --reload --port 4444
 ```
 
-The API will be available at `http://localhost:8000`
+The API will be available at `http://localhost:4444`
+
+## Testing Framework
+
+The project includes a comprehensive testing framework to ensure game logic is correct and reliable.
+
+### Running Tests
+
+#### Basic Test Commands
+
+```bash
+# Run all tests
+python run_tests.py
+
+# Or using pytest directly
+python -m pytest
+
+# Run a specific test file
+python -m pytest tests/test_tic_tac_toe.py -v
+
+# Run a specific test method
+python -m pytest tests/test_tic_tac_toe.py::TestTicTacToe::test_win_condition -v
+
+# Run tests with coverage report
+pytest --cov=. --cov-report=term-missing
+```
+
+#### Running Specific Test Cases
+
+For more control over test execution, use the `run_test_case.py` script:
+
+```bash
+# Run a specific test case
+python scripts/run_test_case.py tic_tac_toe test_win_condition
+
+# Run with test data
+python scripts/run_test_case.py tic_tac_toe test_win_condition --test-data tests/test_data/tic_tac_toe_win.json
+```
+
+#### Test Utilities
+
+The `tests/helpers.py` module provides utility functions for testing:
+
+- `load_test_data()`: Load test data from JSON files
+- `save_test_data()`: Save test data to JSON files
+- `assert_valid_game_state()`: Validate game state structure
+- `generate_random_move()`: Generate random valid moves
+- `play_game_until_completion()`: Automate game play for testing
+
+Example usage:
+
+```python
+from tests.helpers import load_test_data, assert_valid_game_state
+
+def test_with_data():
+    test_data = load_test_data('tic_tac_toe_win.json')
+    # Use test_data in your test
+    assert_valid_game_state(test_data['initial_state'])
+```
+
+### Test Structure
+
+Each game has its own test file following the naming convention `test_<game_name>.py`. The test files are automatically generated and include test stubs for common test cases:
+
+- `test_initial_state`: Verify the initial game state
+- `test_valid_moves`: Test valid moves
+- `test_invalid_moves`: Test invalid moves
+- `test_game_flow`: Test a complete game flow
+- `test_win_condition`: Test win conditions
+- `test_draw_condition`: Test draw conditions (if applicable)
+
+### Code Quality
+
+The project uses several tools to maintain code quality:
+
+- **Black**: Code formatting
+- **isort**: Import sorting
+- **flake8**: Linting
+- **mypy**: Static type checking
+
+Run all code quality checks:
+
+```bash
+# Format code with black
+black .
+
+# Sort imports with isort
+isort .
+
+# Lint with flake8
+flake8 .
+
+# Type check with mypy
+mypy .
+```
+
+## Continuous Integration
+
+The project uses GitHub Actions for continuous integration. The following checks are run on every push and pull request:
+
+- Unit tests on multiple Python versions
+- Code coverage reporting
+- Code formatting with Black
+- Import sorting with isort
+- Linting with flake8
+- Type checking with mypy
+
+## Development Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/game-arcade-api.git
+   cd game-arcade-api
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   ```
+
+4. Run tests:
+   ```bash
+   python run_tests.py
+   ```
 
 ## API Documentation
 
