@@ -54,14 +54,30 @@ class BaseGameTest(unittest.TestCase):
         for row in state["board"]:
             self.assertIsInstance(row, list)
             for cell in row:
-                self.assertIn(cell, [None, "X", "O", "R", "Y", "B", "W"])
+                # Valid cell contents: None, string (for simple games), or dict (for complex games like Shogi)
+                if isinstance(cell, dict):
+                    self.assertIn("type", cell, "Shogi piece dict should have a 'type' key")
+                    # Shogi piece types are stored in lowercase in the dict
+                    shogi_base_piece_types = ["k", "g", "s", "n", "l", "p", "b", "r"]
+                    self.assertIn(cell["type"], shogi_base_piece_types, f"Unknown Shogi piece type: {cell.get('type')}")
+                    self.assertIn("color", cell, "Shogi piece dict should have a 'color' key")
+                    self.assertIn(cell["color"], ["w", "b"], f"Unknown Shogi piece color: {cell.get('color')}")
+                    self.assertIn("promoted", cell, "Shogi piece dict should have a 'promoted' key")
+                    self.assertIsInstance(cell["promoted"], bool, "Shogi piece 'promoted' should be a boolean")
+                elif cell is not None and not isinstance(cell, str): # Catch unexpected types
+                    self.fail(f"Board cell content must be None, a string, or a dictionary, but got {type(cell)}: {cell}")
+                else: # Cell is None or a string
+                    valid_string_cells = [None, "X", "O", "R", "Y", "B", "W", "B_KING", "W_KING", 
+                                          "P", "L", "N", "S", "G", "K", 
+                                          "R_P", "B_P", "+P", "+L", "+N", "+S"] # Original list for non-dict cells
+                    self.assertIn(cell, valid_string_cells, f"Invalid string cell content: {cell}")
 
         # Check current player (supporting multiple game formats)
-        self.assertIn(state["current_player"], ["X", "O", "R", "Y", "B", "W"])
+        self.assertIn(state["current_player"], ["X", "O", "R", "Y", "B", "W", "Sente", "Gote", "w", "b"]) # Added Shogi players w/b
 
         # Check game over and winner consistency
         if state["game_over"]:
-            self.assertIn(state["winner"], [None, "X", "O", "R", "Y", "B", "W", "draw"])
+            self.assertIn(state["winner"], [None, "X", "O", "R", "Y", "B", "W", "Sente", "Gote", "draw", "w", "b"]) # Added Shogi players w/b
         else:
             self.assertIsNone(state["winner"])
 

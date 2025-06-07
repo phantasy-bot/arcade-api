@@ -38,10 +38,9 @@ class ShogiGame(AbstractGame):
 
     def __init__(self, game_id: str):
         super().__init__(game_id)
-        self.board = [[None] * self.FILES for _ in range(self.RANKS)]
-        self.current_player = "w"  # White (first) moves first
-        self.hands = {"w": {}, "b": {}}  # Captured pieces that can be dropped
-        self._init_board()
+        # Initialization of board, current_player, hands, and _init_board()
+        # is now handled by _restore_game_state (for defaults on new game)
+        # and initialize_game (for full setup on new game, called externally by tests/game runner).
 
     def _init_board(self):
         """Initialize the shogi board with pieces"""
@@ -100,39 +99,47 @@ class ShogiGame(AbstractGame):
             ShogiPiece("L", "w"),
         ]
 
-    def _init_game_state(self):
-        """Initialize game state"""
-        self.board = [[None] * self.FILES for _ in range(self.RANKS)]
-        self.current_player = "w"
-        self.hands = {"w": {}, "b": {}}
-        self._init_board()
-
     def _restore_game_state(self):
-        """Restore game state from history"""
-        if self.history_state:
-            latest_move = self.history_state[-1]
-            self.current_player = "b" if latest_move["player"] == "w" else "w"
-
-            # Reconstruct board from moves
+        """Restore game attributes from self.history.current_state."""
+        if self.history.current_state:  # Game state was loaded from persistence
+            loaded_board_data = self.history.current_state.get('board')
+            self.board = [[None] * self.FILES for _ in range(self.RANKS)] # Initialize with Nones
+            if loaded_board_data:
+                for r_idx, row_data in enumerate(loaded_board_data):
+                    if r_idx < self.RANKS:
+                        for c_idx, piece_data in enumerate(row_data):
+                            if c_idx < self.FILES and piece_data:
+                                piece = ShogiPiece(
+                                    piece_type=piece_data['type'],
+                                    color=piece_data['color'],
+                                    promoted=piece_data.get('promoted', False)
+                                )
+                                if 'promotion_rank' in piece_data:
+                                    piece.promotion_rank = piece_data['promotion_rank']
+                                self.board[r_idx][c_idx] = piece
+            
+            self.current_player = self.history.current_state.get('current_player', "w")
+            loaded_hands = self.history.current_state.get('hands', {"w": {}, "b": {}})
+            self.hands = {
+                "w": loaded_hands.get("w", {}),
+                "b": loaded_hands.get("b", {})
+            }
+        else:  # New game or load failed, set defaults for initialize_game to use
             self.board = [[None] * self.FILES for _ in range(self.RANKS)]
+            self.current_player = "w"
             self.hands = {"w": {}, "b": {}}
 
-            for move in self.history_state:
-                move_data = move["move_data"]
-                piece = ShogiPiece(
-                    move_data["piece_type"],
-                    move_data["color"],
-                    move_data.get("promoted", False),
-                )
-                piece.promotion_rank = move_data.get("promotion_rank")
+    def initialize_game(self) -> Dict[str, Any]:
+        """Initialize a new game instance, set up board, players, etc., and return initial state."""
+        # Set up the initial state (board, player, hands)
+        self._init_board()  # Populate the board with pieces
 
-                if move_data.get("is_drop"):
-                    self.hands[move_data["color"]][move_data["piece_type"]] = (
-                        self.hands[move_data["color"]].get(move_data["piece_type"], 0)
-                        - 1
-                    )
+        # Update and persist history
+        self.history.current_state = self.get_game_state()
+        if self.game_id: # Only persist if game_id is available
+            self.history._persist_to_disk() # Ensure initial state is saved if it's a new game
 
-                self.board[move_data["to_row"]][move_data["to_col"]] = piece
+        return self.history.current_state
 
     def validate_move(self, move_data: Dict[str, Any]) -> bool:
         """Validate if a move is legal"""

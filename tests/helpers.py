@@ -1,6 +1,4 @@
-""
-Test helper functions and utilities.
-"""
+"""Test helper functions and utilities."""
 from typing import Dict, Any, List, Tuple, Optional, Union
 import json
 from pathlib import Path
