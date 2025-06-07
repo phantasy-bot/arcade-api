@@ -54,14 +54,14 @@ class BaseGameTest(unittest.TestCase):
         for row in state["board"]:
             self.assertIsInstance(row, list)
             for cell in row:
-                self.assertIn(cell, [None, "X", "O", "R", "Y"])
+                self.assertIn(cell, [None, "X", "O", "R", "Y", "B", "W"])
 
-        # Check current player (supporting both X/O and R/Y)
-        self.assertIn(state["current_player"], ["X", "O", "R", "Y"])
+        # Check current player (supporting multiple game formats)
+        self.assertIn(state["current_player"], ["X", "O", "R", "Y", "B", "W"])
 
         # Check game over and winner consistency
         if state["game_over"]:
-            self.assertIn(state["winner"], [None, "X", "O", "R", "Y", "draw"])
+            self.assertIn(state["winner"], [None, "X", "O", "R", "Y", "B", "W", "draw"])
         else:
             self.assertIsNone(state["winner"])
 
