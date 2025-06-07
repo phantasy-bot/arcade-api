@@ -33,16 +33,24 @@ pip install -r requirements.txt
 
 ## Development Setup
 
-1. Create and activate a virtual environment:
+1. First, create and activate a virtual environment:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   # On Windows:
+   python -m venv .venv
+   .venv\Scripts\activate
+   
+   # On macOS/Linux:
+   python3 -m venv .venv
+   source .venv/bin/activate
    ```
 
 2. Install the required dependencies:
    ```bash
+   # Install production dependencies
    pip install -r requirements.txt
-   pip install pytest  # For running tests
+   
+   # Install development dependencies (including testing tools)
+   pip install -r requirements-dev.txt
    ```
 
 ## Running the Server
@@ -63,20 +71,23 @@ The project includes a comprehensive testing framework to ensure game logic is c
 #### Basic Test Commands
 
 ```bash
-# Run all tests
-python run_tests.py
+# Run all tests with coverage report
+pytest --cov=. --cov-report=term-missing
 
-# Or using pytest directly
-python -m pytest
+# Run all tests without coverage
+pytest
 
 # Run a specific test file
-python -m pytest tests/test_tic_tac_toe.py -v
+pytest tests/test_connect_four.py -v
 
 # Run a specific test method
-python -m pytest tests/test_tic_tac_toe.py::TestTicTacToe::test_win_condition -v
+pytest tests/test_connect_four.py::TestConnectFourGame::test_diagonal_win -v
 
-# Run tests with coverage report
-pytest --cov=. --cov-report=term-missing
+# Run tests with detailed output
+pytest -v
+
+# Run tests with coverage report in HTML format (creates htmlcov/ directory)
+pytest --cov=. --cov-report=html
 ```
 
 #### Running Specific Test Cases

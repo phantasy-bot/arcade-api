@@ -8,11 +8,16 @@ class ConnectFourGame(AbstractGame):
     COLUMNS = 7
     WIN_LENGTH = 4
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, game_id: str):
+        super().__init__(game_id)
         self.board = [[None] * self.COLUMNS for _ in range(self.ROWS)]
         self.current_player = "R"  # Red player starts
-        self.game_id = None
+        self._initialize_board()
+    
+    def _initialize_board(self):
+        """Initialize the game board."""
+        self.board = [[None] * self.COLUMNS for _ in range(self.ROWS)]
+        self.current_player = "R"
 
     def initialize_game(self) -> Dict[str, Any]:
         """Reset the board and start a new game"""
@@ -92,18 +97,22 @@ class ConnectFourGame(AbstractGame):
                 if self._check_sequence(row, col, (1, 0)):
                     return self.board[row][col]
 
-        # Check diagonal (bottom-left to top-right)
-        for row in range(self.ROWS - self.WIN_LENGTH + 1):
-            for col in range(self.COLUMNS - self.WIN_LENGTH + 1):
-                if self._check_sequence(row, col, (-1, 1)):
-                    return self.board[row][col]
-
         # Check diagonal (top-left to bottom-right)
         for row in range(self.ROWS - self.WIN_LENGTH + 1):
             for col in range(self.COLUMNS - self.WIN_LENGTH + 1):
-                if self._check_sequence(row, col, (1, 1)):
+                if self._check_sequence(row, col, (1, 1)):  # Down-right
                     return self.board[row][col]
 
+        # Check diagonal (top-right to bottom-left)
+        for row in range(self.ROWS - self.WIN_LENGTH + 1):
+            for col in range(self.WIN_LENGTH - 1, self.COLUMNS):
+                if self._check_sequence(row, col, (1, -1)):  # Down-left
+                    return self.board[row][col]
+
+        # Check for draw
+        if all(cell is not None for row in self.board for cell in row):
+            return "draw"
+            
         return None
 
     def _check_sequence(

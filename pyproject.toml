@@ -53,6 +53,7 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 python_files = ["test_*.py"]
 addopts = "-v --cov=. --cov-report=term-missing"
 norecursedirs = [
