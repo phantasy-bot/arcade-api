@@ -39,6 +39,10 @@ class TicTacToeGame(AbstractGame):
         Returns:
             bool: True if the move is valid, False otherwise
         """
+        # If game is already over, no more moves are allowed
+        if self.is_game_over():
+            return False
+            
         try:
             # Extract move data
             move_data = move_data.get("move_data", move_data)  # Handle nested move_data
@@ -47,6 +51,7 @@ class TicTacToeGame(AbstractGame):
             # Convert string coordinates to integers if needed
             row = int(move_data["row"])
             col = int(move_data["col"])
+
 
             # Check if the move is within bounds
             if not (0 <= row < 3 and 0 <= col < 3):
@@ -57,7 +62,8 @@ class TicTacToeGame(AbstractGame):
                 return False
 
             # The player making the move must be the current player
-            if player != self.current_player:
+            # Convert to string to handle both 'X' and 'x' or 'O' and 'o'
+            if str(player).upper() != str(self.current_player).upper():
                 return False
 
             return True
@@ -79,12 +85,17 @@ class TicTacToeGame(AbstractGame):
         Raises:
             ValueError: If the move is invalid
         """
+        # If game is already over, raise an error
+        if self.is_game_over():
+            raise ValueError("Game is already over")
+            
         # Extract move data and player
         player = move_data.get("player", self.current_player)
         move = move_data.get("move_data", move_data)
 
         # Add player to move if not present
         if "player" not in move:
+            move = move.copy()  # Create a copy to avoid modifying the input
             move["player"] = player
 
         if not self.validate_move(move):
@@ -131,28 +142,24 @@ class TicTacToeGame(AbstractGame):
             or None if the game is not over yet.
         """
         # Check rows
-        for row in self.board:
-            if row[0] == row[1] == row[2] and row[0] is not None:
-                return row[0]
+        for row in range(3):
+            if (self.board[row][0] == self.board[row][1] == self.board[row][2] and 
+                self.board[row][0] is not None):
+                return self.board[row][0]
 
         # Check columns
         for col in range(3):
-            if (
-                self.board[0][col] == self.board[1][col] == self.board[2][col]
-                and self.board[0][col] is not None
-            ):
+            if (self.board[0][col] == self.board[1][col] == self.board[2][col] and 
+                self.board[0][col] is not None):
                 return self.board[0][col]
 
         # Check diagonals
-        if (
-            self.board[0][0] == self.board[1][1] == self.board[2][2]
-            and self.board[0][0] is not None
-        ):
+        if (self.board[0][0] == self.board[1][1] == self.board[2][2] and 
+            self.board[0][0] is not None):
             return self.board[0][0]
-        if (
-            self.board[0][2] == self.board[1][1] == self.board[2][0]
-            and self.board[0][2] is not None
-        ):
+            
+        if (self.board[0][2] == self.board[1][1] == self.board[2][0] and 
+            self.board[0][2] is not None):
             return self.board[0][2]
 
         # Check for draw (board full)
